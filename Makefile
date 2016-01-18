@@ -18,13 +18,13 @@ modules_install:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
 
 clean:
-	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions
+	rm -rf *.o core .depend .*.cmd *.ko *.mod.c .tmp_versions
 
 .PHONY: modules modules_install clean
 
 else
 # called from kernel build system: just declare what our modules are
-obj-m := hello_world.o hellop.o
+obj-m := hello_world.o hellop.o scull.o
 #seq.o jit.o jiq.o sleepy.o complete.o \
 #silly.o faulty.o kdatasize.o kdataalign.o
 endif

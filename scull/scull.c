@@ -216,10 +216,14 @@ int scull_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case SCULL_IOCSQUANTUM: /* Set: arg points to the value */
+		if (! capable (CAP_SYS_ADMIN))
+			return -EPERM;
 		ret = __get_user(scull_quantum, (int __user *) arg);
 		break;
 
 	case SCULL_IOCTQUANTUM: /* Tell: arg is the value */
+		if (! capable (CAP_SYS_ADMIN))
+			return -EPERM;
 		scull_quantum =  arg;
 		break;
 
@@ -231,6 +235,8 @@ int scull_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		return scull_quantum;
 
 	case SCULL_IOCXQUANTUM: /* Exchange: use arg as pointer */
+		if (! capable (CAP_SYS_ADMIN))
+			return -EPERM;
 		tmp = scull_quantum;
 		ret = __get_user(scull_quantum, (int __user *) arg);
 		if (ret == 0)
@@ -238,15 +244,21 @@ int scull_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case SCULL_IOCHQUANTUM: /* Shift: like Tell + Query */
+		if (! capable (CAP_SYS_ADMIN))
+			return -EPERM;
 		tmp = scull_quantum;
 		scull_quantum = arg;
 		return tmp;
 
 	case SCULL_IOCSQSET:
+		if (! capable (CAP_SYS_ADMIN))
+			return -EPERM;
 		ret = __get_user(scull_qset, (int __user *) arg);
 		break;
 
 	case SCULL_IOCTQSET:
+		if (! capable (CAP_SYS_ADMIN))
+			return -EPERM;
 		scull_qset = arg;
 		break;
 
@@ -259,6 +271,8 @@ int scull_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case SCULL_IOCXQSET:
+		if (! capable (CAP_SYS_ADMIN))
+			return -EPERM;
 		tmp = scull_qset;
 		ret = __get_user(scull_qset, (int __user *) arg);
 		if (ret == 0)
@@ -266,9 +280,14 @@ int scull_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case SCULL_IOCHQSET:
+		if (! capable (CAP_SYS_ADMIN))
+			return -EPERM;
 		tmp = scull_qset;
 		scull_qset = arg;
 		return tmp;
+
+	default: /* redundant, as cmd was checked against MAXNR */
+		return -ENOTTY;
 	}
 
 	return ret;

@@ -186,6 +186,93 @@ out:
 	up(&dev->sem);
 	return retval;
 }
+/*
+ * The ioctl() implementation
+ */
+
+int scull_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+	int err = 0, ret = 0, tmp;
+	if (_IOC_TYPE(cmd) != SCULL_IOC_MAGIC) return -ENOTTY;
+	if (_IOC_NR(cmd) > SCULL_IOC_MAXNR) return -ENOTTY;
+	/*
+	 * the type is a bitmask, and VERIFY_WRITE catches R/W
+	 * transfers. Note that the type is user-oriented, while
+	 * verify_area is kernel-oriented, so the concept of "read" and
+	 * "write" is reversed
+	 */
+	if (_IOC_DIR(cmd) & _IOC_READ)
+		err = !access_ok(VERIFY_WRITE, (void __user *)arg, _IOC_SIZE(cmd));
+	else if (_IOC_DIR(cmd) & _IOC_WRITE)
+		err =  !access_ok(VERIFY_READ, (void __user *)arg, _IOC_SIZE(cmd));
+	if (err)
+		return -EFAULT;
+
+	switch(cmd) {
+
+	case SCULL_IOCRESET:
+		scull_qset = SCULL_QSET;
+		scull_quantum = SCULL_QUANTUM;
+		break;
+
+	case SCULL_IOCSQUANTUM: /* Set: arg points to the value */
+		ret = __get_user(scull_quantum, (int __user *) arg);
+		break;
+
+	case SCULL_IOCTQUANTUM: /* Tell: arg is the value */
+		scull_quantum =  arg;
+		break;
+
+	case SCULL_IOCGQUANTUM: /* Get: arg is pointer to result */
+		ret = __put_user(scull_quantum, (int __user *) arg);
+		break;
+
+	case SCULL_IOCQQUANTUM: /* Query: return it (it's positive) */
+		return scull_quantum;
+
+	case SCULL_IOCXQUANTUM: /* Exchange: use arg as pointer */
+		tmp = scull_quantum;
+		ret = __get_user(scull_quantum, (int __user *) arg);
+		if (ret == 0)
+			ret = __put_user(scull_quantum, (int __user *) arg);
+		break;
+
+	case SCULL_IOCHQUANTUM: /* Shift: like Tell + Query */
+		tmp = scull_quantum;
+		scull_quantum = arg;
+		return tmp;
+
+	case SCULL_IOCSQSET:
+		ret = __get_user(scull_qset, (int __user *) arg);
+		break;
+
+	case SCULL_IOCTQSET:
+		scull_qset = arg;
+		break;
+
+	case SCULL_IOCGQSET:
+		ret = __put_user(scull_qset, (int __user *) arg);
+		break;
+
+	case SCULL_IOCQQSET:
+		return scull_qset;
+		break;
+
+	case SCULL_IOCXQSET:
+		tmp = scull_qset;
+		ret = __get_user(scull_qset, (int __user *) arg);
+		if (ret == 0)
+			ret = __put_user(scull_qset, (int __user *) arg);
+		break;
+
+	case SCULL_IOCHQSET:
+		tmp = scull_qset;
+		scull_qset = arg;
+		return tmp;
+	}
+
+	return ret;
+}
 
 struct file_operations scull_fops = {
 	.owner = THIS_MODULE,

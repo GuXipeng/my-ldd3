@@ -367,3 +367,34 @@ ch6. 高级字符驱动操作
             void __free_pages(struct page *page, unsigned int order);
             void free_hot_cold_page(struct page *page, bool cold); cold = true ? free a cold page : free a hot page
     8.3.3 vmalloc
+    8.4 per-CPU variable
+      DEFINE_PER_CPU(type, name);
+      (API) get_cpu_var(name)++;
+            put_cpu_var(name);
+            per_cpu(variable, int cpu_id);
+
+            EXPORT_PER_CPU_SYMBOL(per_cpu_var);
+            EXPORT_PER_CPU_SYMBOL_GPL(per_cpu_var);
+  第9章 与硬件通讯
+      9.1 register
+      (API)
+      #include <linux/kernel.h>
+      void barrier(void);
+
+      #include <asm/system.h>
+      void rmb(void); void read_barriver_depends(void);
+      void wmb(void); void mb(void);
+
+      9.2 I/O ports
+        (API) #include <linux/ioport.h>
+              struct resource *request_region(resource_size_t start, resource_size_t n, const char *name);
+              void release_region(start, n);
+              int check_region(start, n);
+
+  第10章 中断
+    (API)
+    int request_irq(unsigned int irq, irq_handler_t handler,
+                    unsigned long flags, const char *name, void *dev);
+    int request_threaded_irq(unsigned int irq, irq_handler_t handler,
+                            irq_handler_t thread_fn,
+                            unsigned long flags, const char *name, void *dev);
